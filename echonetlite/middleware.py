@@ -173,9 +173,11 @@ class ProfileSuperObject(Device):
 class NodeProfile(ProfileSuperObject):
     def __init__(self, eoj=None):
         super(NodeProfile, self).__init__(eoj)
-        self._eoj = EOJ(CLSGRP_CODE['PROFILE'],
-                        CLS_PR_CODE['PROFILE'],
-                        INSTANCE_PR_NORMAL)
+        if eoj is None:
+            self._eoj = EOJ(CLSGRP_CODE['PROFILE'],
+                            CLS_PR_CODE['PROFILE'],
+                            INSTANCE_PR_NORMAL)
+
         # Operating status
         self._properties[EPC_OPERATING_STATUS] = [EDT_OPERATING_STATUS_BOOTING]
         # Echonet Lite protocol version
@@ -298,10 +300,11 @@ class NodeProfile(ProfileSuperObject):
                 self._on_receive_instance_list_s_response(
                     from_node_id, from_eoj, esv, prop)
 
-        
+
 class NodeSuperObject(Device):
     def __init__(self, eoj=None):
         super(NodeSuperObject, self).__init__(eoj)
+
         # Operation status
         self._properties[EPC_OPERATING_STATUS] = [EDT_OPERATING_STATUS_BOOTING]
         # Installation location
@@ -340,6 +343,7 @@ class NodeSuperObject(Device):
 class Controller(NodeSuperObject):
     def __init__(self, eoj=None, instance_id=1):
         super(Controller, self).__init__(eoj)
-        self._eoj = EOJ(CLSGRP_CODE['MANAGEMENT_OPERATION'],
-                        CLS_MO_CODE['CONTROLLER'],
-                        instance_id)
+        if eoj is None:
+            self._eoj = EOJ(CLSGRP_CODE['MANAGEMENT_OPERATION'],
+                            CLS_MO_CODE['CONTROLLER'],
+                            instance_id)

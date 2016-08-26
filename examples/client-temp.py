@@ -23,7 +23,7 @@ class Temperature(middleware.NodeSuperObject):
                          props=[Property(epc=EPC_TEMPERATURE),],
                          to_eoj=to_eoj,
                          to_node_id=to_node_id)
-        
+
     def on_temperature(self, from_node_id, from_eoj,
                        to_device, esv, prop):
         if esv not in ESV_RESPONSE_CODES:
@@ -32,8 +32,8 @@ class Temperature(middleware.NodeSuperObject):
         print('Temperature is', val / 10)
 
 class MyProfile(middleware.NodeProfile):
-    def __init__(self):
-        super(MyProfile, self).__init__()
+    def __init__(self, eoj=None):
+        super(MyProfile, self).__init__(eoj=eoj)
 
     def on_find_device(self, eoj, from_node_id):
         if (eoj.clsgrp == CLSGRP_CODE['SENSOR']
