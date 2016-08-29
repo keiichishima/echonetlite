@@ -4,7 +4,7 @@ from echonetlite.interfaces import monitor
 from echonetlite import middleware
 from echonetlite.protocol import *
 
-class Temperature(middleware.NodeSuperObject):
+class Temperature(middleware.Device):
     def __init__(self, eoj, node_id):
         super(Temperature, self).__init__(eoj=eoj)
         self._node_id = node_id
