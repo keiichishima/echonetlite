@@ -225,13 +225,25 @@ class Message(object):
         return '{0:#04x}'.format(esv)
 
 class Property(object):
-    def __init__(self, epc=None, pdc=None, edt=None):
-        self.epc = epc
+    def __init__(self, epc=None, edt=None):
+        self._epc = epc
         if edt is None:
-            self.pdc = 0
+            self._pdc = 0
         else:
-            self.pdc = pdc
-        self.edt = edt
+            self._pdc = len(edt)
+        self._edt = edt
+
+    @property
+    def epc(self):
+        return self._epc
+
+    @property
+    def pdc(self):
+        return self._pdc
+
+    @property
+    def edt(self):
+        return self._edt
 
     def __str__(self):
         s = 'EPC={0:#04x}'.format(self.epc)
@@ -264,10 +276,7 @@ def decode(data):
         edt = None
         if pdc != 0:
             edt = struct.unpack('!' + 'B' * pdc, data[ptr+2:ptr+2+pdc])
-        pl = Property()
-        pl.epc = epc
-        pl.pdc = pdc
-        pl.edt = edt
+        pl = Property(epc, edt)
         return (pl, 2 + pdc)
         
     msg = Message()

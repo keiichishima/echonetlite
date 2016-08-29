@@ -58,6 +58,10 @@ class Device(object):
         return self._eoj
 
     @property
+    def properties(self):
+        return self._properties
+
+    @property
     def listeners(self):
         return self._listeners
 
@@ -68,6 +72,12 @@ class Device(object):
             for dt in edt:
                 s += ' {0:02x}'.format(dt)
         return s
+
+    def _add_property(self, epc, edt):
+        pass
+
+    def _remove_property(self, epc):
+        pass
 
     def add_listener(self, epc, func):
         key = self._eoj.clsgrp << 16 | self._eoj.cls << 8 | epc
@@ -97,7 +107,6 @@ class Device(object):
                     #print('EPC {0:#x} does not exist'.format(p.epc))
                     continue
                 res_props.append(Property(epc=p.epc,
-                                          pdc=len(self._properties[p.epc]),
                                           edt=self._properties[p.epc]))
         if (msg.esv == ESV_CODE['SETI']
             or msg.esv == ESV_CODE['SETC']):
@@ -109,7 +118,6 @@ class Device(object):
                 self._properties[p.epc] = p.edt
                 if msg.esv == ESV_CODE['SETC']:
                     res_props.append(Property(epc=p.epc,
-                                              pdc=len(self._properties[p.epc]),
                                               edt=self._properties[p.epc]))
             
         return res_props
