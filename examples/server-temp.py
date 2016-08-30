@@ -7,6 +7,7 @@ from echonetlite.protocol import *
 class MyTemperature(middleware.NodeSuperObject):
     def __init__(self, eoj):
         super(MyTemperature, self).__init__(eoj=eoj)
+        # self.property[EPC_MANUFACTURE_CODE] = ...
         self._add_property(EPC_TEMPERATURE, [0,0])
         self.get_property_map += [
             EPC_TEMPERATURE]
@@ -22,6 +23,8 @@ class MyTemperature(middleware.NodeSuperObject):
 
 # Create local devices
 profile = middleware.NodeProfile()
+# profile.property[EPC_MANUFACTURE_CODE] = ...
+# profile.property[EPC_IDENTIFICATION_NUMBER] = ...
 temperature = MyTemperature(eoj=EOJ(clsgrp=CLSGRP_CODE['SENSOR'],
                                     cls=CLS_SE_CODE['TEMPERATURE'],
                                     instance_id=1))
