@@ -230,9 +230,9 @@ class NodeProfile(ProfileSuperObject):
         # Echonet Lite protocol version
         self._properties[EPC_VERSION_INFORMATION] = PROTOCOL_VERSION
         # Identification number
-        self._properties[EPC_IDENTIFICATION_NUMBER] = [0xfe] + self._properties[0x8a] + [0] * 13
+        self._properties[EPC_IDENTIFICATION_NUMBER] = [0xfe] + self._properties[EPC_MANUFACTURE_CODE] + [0] * 13
         # Get property map
-        self._get_property_map += [
+        self.get_property_map += [
             EPC_OPERATING_STATUS,
             EPC_VERSION_INFORMATION,
             EPC_IDENTIFICATION_NUMBER,
