@@ -7,11 +7,10 @@ from echonetlite.protocol import *
 class MyTemperature(middleware.NodeSuperObject):
     def __init__(self, eoj):
         super(MyTemperature, self).__init__(eoj=eoj)
-        self._properties[EPC_TEMPERATURE] = [0,0]
+        self._add_property(EPC_TEMPERATURE, [0,0])
         self._get_property_map += [
             EPC_TEMPERATURE]
-        self._properties[EPC_GET_PROPERTY_MAP] = [
-            len(self._get_property_map)] + self._get_property_map
+        self._update_property_maps()
 
         monitor.schedule_loopingcall(
             1,
