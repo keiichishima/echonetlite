@@ -21,7 +21,7 @@ class Node(object):
 
     def __str__(self):
         s = 'Node ID: {0}'.format(self._node_id)
-        for d in self._devices:
+        for d in self._devices.values():
             s += ', ' + str(d)
         return s
 
