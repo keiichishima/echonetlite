@@ -83,9 +83,14 @@ class Device(object):
 
 
 class LocalDevice(Device):
+    def __init__(self, eoj=None):
+        super(LocalDevice, self).__init__(eoj)
+        self._status_change_property_map = []
+        self._set_property_map = []
+        self._get_property_map = []
+
     def _add_property(self, epc, edt):
         self._properties[epc] = edt
-        self._update_property_maps()
 
     def _get_property(self, epc):
         if epc in self._properties:
@@ -94,18 +99,36 @@ class LocalDevice(Device):
 
     def _remove_property(self, epc):
         del self._properties[epc]
-        self._update_property_maps()
 
-    def _update_property_maps(self):
-        if hasattr(self, '_status_change_property_map'):
-            self._properties[EPC_STATUS_CHANGE_PROPERTY_MAP] = [
-                len(self._status_change_property_map)] + self._status_change_property_map
-        if hasattr(self, '_set_property_map'):
-            self._properties[EPC_SET_PROPERTY_MAP] = [
-                len(self._set_property_map)] + self._set_property_map
-        if hasattr(self, '_get_property_map'):
-            self._properties[EPC_GET_PROPERTY_MAP] = [
-                len(self._get_property_map)] + self._get_property_map
+    @property
+    def status_change_property_map(self):
+        return self._status_change_property_map
+
+    @status_change_property_map.setter
+    def status_change_property_map(self, prop_map):
+        self._status_change_property_map = prop_map
+        self._properties[EPC_STATUS_CHANGE_PROPERTY_MAP] = [
+            len(self._status_change_property_map)] + self._status_change_property_map
+
+    @property
+    def set_property_map(self):
+        return self._set_property_map
+
+    @set_property_map.setter
+    def set_property_map(self, prop_map):
+        self._set_property_map = prop_map
+        self._properties[EPC_SET_PROPERTY_MAP] = [
+            len(self._set_property_map)] + self._set_property_map
+
+    @property
+    def get_property_map(self):
+        return self._get_property_map
+
+    @get_property_map.setter
+    def get_property_map(self, prop_map):
+        self._get_property_map = prop_map
+        self._properties[EPC_GET_PROPERTY_MAP] = [
+            len(self._get_property_map)] + self._get_property_map
 
     def send(self, esv, props, to_eoj, to_node_id=None):
         msg = Message()
@@ -179,18 +202,16 @@ class ProfileSuperObject(LocalDevice):
         # Vendor code
         self._properties[EPC_MANUFACTURE_CODE] = [0,0,0]
         # Status change announcement property map
-        self._status_change_property_map = []
+        self.status_change_property_map = []
         # Set property map
-        self._set_property_map = []
+        self.set_property_map = []
         # Get property map
-        self._get_property_map = [
+        self.get_property_map = [
             EPC_MANUFACTURE_CODE,
             EPC_STATUS_CHANGE_PROPERTY_MAP,
             EPC_SET_PROPERTY_MAP,
             EPC_GET_PROPERTY_MAP
         ]
-        # Update {status change anno|set|get} property map properties
-        self._update_property_maps()
 
     def _process_response(self, msg, from_node):
         super(ProfileSuperObject, self)._process_response(msg, from_node)
@@ -220,8 +241,6 @@ class NodeProfile(ProfileSuperObject):
             EPC_INSTANCE_LIST_NOTIFICATION,
             EPC_SELF_NODE_INSTANCE_LIST_S,
             EPC_SELF_NODE_CLASS_LIST_S]
-        # Update {status change anno|set|get} property map properties
-        self._update_property_maps()
 
         # This __init__() function is called before the lower layer
         # sender object is created.  So we have to use the
@@ -344,11 +363,11 @@ class NodeSuperObject(LocalDevice):
         # Manufcture code
         self._properties[EPC_MANUFACTURE_CODE] = [0,0,0]
         # Status change announcement property map
-        self._status_change_property_map = []
+        self.status_change_property_map = []
         # Set property map
-        self._set_property_map = []
+        self.set_property_map = []
         # Get property map
-        self._get_property_map = [
+        self.get_property_map = [
             EPC_OPERATING_STATUS,
             EPC_INSTALLATION_LOCATION,
             EPC_VERSION_INFORMATION,
@@ -358,8 +377,6 @@ class NodeSuperObject(LocalDevice):
             EPC_SET_PROPERTY_MAP,
             EPC_GET_PROPERTY_MAP,
         ]
-        # Update {status change anno|set|get} property map properties
-        self._update_property_maps()
 
 
 class Controller(NodeSuperObject):
