@@ -21,7 +21,7 @@ class Node(object):
 
     def __str__(self):
         s = 'Node ID: {0}'.format(self._node_id)
-        for d in self._devices:
+        for d in self._devices.values():
             s += ', ' + str(d)
         return s
 
@@ -73,12 +73,6 @@ class Device(object):
                 s += ' {0:02x}'.format(dt)
         return s
 
-    def _add_property(self, epc, edt):
-        pass
-
-    def _remove_property(self, epc):
-        pass
-
     def add_listener(self, epc, func):
         key = self._eoj.clsgrp << 16 | self._eoj.cls << 8 | epc
         self._listeners[key] = func
@@ -86,6 +80,32 @@ class Device(object):
     def remove_listener(self, epc):
         key = self._eoj.clsgrp << 16 | self._eoj.cls << 8 | epc
         del self._listeners[key]
+
+
+class LocalDevice(Device):
+    def _add_property(self, epc, edt):
+        self._properties[epc] = edt
+        self._update_property_maps()
+
+    def _get_property(self, epc):
+        if epc in self._properties:
+            return self._properties[epc]
+        return None
+
+    def _remove_property(self, epc):
+        del self._properties[epc]
+        self._update_property_maps()
+
+    def _update_property_maps(self):
+        if hasattr(self, '_status_change_property_map'):
+            self._properties[EPC_STATUS_CHANGE_PROPERTY_MAP] = [
+                len(self._status_change_property_map)] + self._status_change_property_map
+        if hasattr(self, '_set_property_map'):
+            self._properties[EPC_SET_PROPERTY_MAP] = [
+                len(self._set_property_map)] + self._set_property_map
+        if hasattr(self, '_get_property_map'):
+            self._properties[EPC_GET_PROPERTY_MAP] = [
+                len(self._get_property_map)] + self._get_property_map
 
     def send(self, esv, props, to_eoj, to_node_id=None):
         msg = Message()
@@ -153,17 +173,15 @@ class Device(object):
         pass
 
 
-class ProfileSuperObject(Device):
+class ProfileSuperObject(LocalDevice):
     def __init__(self, eoj=None):
         super(ProfileSuperObject, self).__init__(eoj)
         # Vendor code
         self._properties[EPC_MANUFACTURE_CODE] = [0,0,0]
         # Status change announcement property map
-        self._properties[EPC_STATUS_CHANGE_PROPERTY_MAP] = []
+        self._status_change_property_map = []
         # Set property map
         self._set_property_map = []
-        self._properties[EPC_SET_PROPERTY_MAP] = [
-            len(self._set_property_map)] + self._set_property_map
         # Get property map
         self._get_property_map = [
             EPC_MANUFACTURE_CODE,
@@ -171,8 +189,8 @@ class ProfileSuperObject(Device):
             EPC_SET_PROPERTY_MAP,
             EPC_GET_PROPERTY_MAP
         ]
-        self._properties[EPC_GET_PROPERTY_MAP] = [
-            len(self._get_property_map)] + self._get_property_map
+        # Update {status change anno|set|get} property map properties
+        self._update_property_maps()
 
     def _process_response(self, msg, from_node):
         super(ProfileSuperObject, self)._process_response(msg, from_node)
@@ -202,8 +220,8 @@ class NodeProfile(ProfileSuperObject):
             EPC_INSTANCE_LIST_NOTIFICATION,
             EPC_SELF_NODE_INSTANCE_LIST_S,
             EPC_SELF_NODE_CLASS_LIST_S]
-        self._properties[EPC_GET_PROPERTY_MAP] = [
-            len(self._get_property_map)] + self._get_property_map
+        # Update {status change anno|set|get} property map properties
+        self._update_property_maps()
 
         # This __init__() function is called before the lower layer
         # sender object is created.  So we have to use the
@@ -219,7 +237,7 @@ class NodeProfile(ProfileSuperObject):
             grpcls = (d.eoj.clsgrp << 8 | d.eoj.cls)
             grpcls_set.add(grpcls)
             if (d.eoj.clsgrp == CLSGRP_CODE['PROFILE']
-                and d.eoj.clsgrp == CLS_CODE['PROFILE']['PROFILE']):
+                and d.eoj.cls == CLS_PR_CODE['PROFILE']):
                 instance_set.add(d.eoj.eoj)
             else:
                 instance_set.add(d.eoj.eoj)
@@ -309,7 +327,7 @@ class NodeProfile(ProfileSuperObject):
                     from_node_id, from_eoj, esv, prop)
 
 
-class NodeSuperObject(Device):
+class NodeSuperObject(LocalDevice):
     def __init__(self, eoj=None):
         super(NodeSuperObject, self).__init__(eoj)
 
@@ -326,13 +344,9 @@ class NodeSuperObject(Device):
         # Manufcture code
         self._properties[EPC_MANUFACTURE_CODE] = [0,0,0]
         # Status change announcement property map
-        self._change_announcement_property_map = []
-        self._properties[EPC_STATUS_CHANGE_PROPERTY_MAP] = [
-            len(self._change_announcement_property_map)] + self._change_announcement_property_map
+        self._status_change_property_map = []
         # Set property map
         self._set_property_map = []
-        self._properties[EPC_SET_PROPERTY_MAP] = [
-            len(self._set_property_map)] + self._set_property_map
         # Get property map
         self._get_property_map = [
             EPC_OPERATING_STATUS,
@@ -344,8 +358,8 @@ class NodeSuperObject(Device):
             EPC_SET_PROPERTY_MAP,
             EPC_GET_PROPERTY_MAP,
         ]
-        self._properties[EPC_GET_PROPERTY_MAP] = [
-            len(self._get_property_map)] + self._get_property_map
+        # Update {status change anno|set|get} property map properties
+        self._update_property_maps()
 
 
 class Controller(NodeSuperObject):
