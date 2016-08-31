@@ -3,9 +3,7 @@
 
 from twisted.internet import reactor
 from twisted.internet import task
-from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.protocol import Factory
-from twisted.internet.protocol import Protocol
 
 from echonetlite import shellservice
 from echonetlite import ipv4adapter
@@ -22,7 +20,7 @@ class MessageListener(object):
         device = None
         # deliver the message to self devices
         # (XXX need to handel instance_id == 0)
-        for _, d in self_node.devices.items():
+        for d in self_node.devices.values():
             if msg.deoj == d.eoj:
                 device = d
                 break
@@ -87,9 +85,9 @@ class Monitor(object):
     def start(self, node_id, devices, adapter=ipv4adapter):
         self._node_id = node_id
         self.sender = adapter.Sender(local_addr=node_id)
-        n = middleware.Node(node_id, devices)
-        n.get_profile().update_device_numbers(devices)
-        self._nodes[node_id] = n
+        self_node = middleware.Node(node_id, devices)
+        self_node.get_profile().update_device_numbers(devices)
+        self._nodes[node_id] = self_node
         reactor.listenMulticast(adapter.echonet_lite_port,
                                 adapter.Receiver(
                                     local_addr=node_id,
