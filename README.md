@@ -5,8 +5,8 @@ middleware module for Python3.  The current implementation only
 provides quite limited functions to implement Echonet Lite server and
 client.
 
-[The base specification](http://echonet.jp/spec_en/) is available from
-the Echonet web site.
+[Echonet Lite specification](http://echonet.jp/spec_en/) is available
+from the Echonet web site.
 
 
 ## Programming an Echonet Lite Node
@@ -158,3 +158,20 @@ case.  In the ``on_did_find_device()`` function, you will receive an
 EOJ and node IP address when the middleware find a new device.  You
 need to check the EOJ and create a new device entry (the
 ``Temperature`` class in this case).
+
+
+## Code
+
+The source code is available at
+https://github.com/keiichishima/echonetlite
+
+## Bug Reports
+
+Please submit bug reports or patches through the GitHub interfaces.
+
+
+## Author
+
+Keiichi SHIMA
+/ IIJ Innovation Institute Inc.
+/ WIDE project
