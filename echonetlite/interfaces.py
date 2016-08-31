@@ -16,7 +16,7 @@ class MessageListener(object):
     def __init__(self, monitor):
         self._monitor = monitor
 
-    def on_receive(self, msg, from_node):
+    def on_did_receive(self, msg, from_node):
         # find devices registered in this node
         self_node = self._monitor.get_self_node()
         device = None
@@ -37,11 +37,11 @@ class MessageListener(object):
 
         # call device default message receivers
         if msg.esv in protocol.ESV_REQUEST_CODES:
-            device.on_receive_request(msg, from_node)
+            device.on_did_receive_request(msg, from_node)
         if msg.esv in protocol.ESV_RESPONSE_CODES:
-            device.on_receive_response(msg, from_node)
+            device.on_did_receive_response(msg, from_node)
         if msg.esv in protocol.ESV_ERROR_CODES:
-            device.on_receive_error(msg, from_node)
+            device.on_did_receive_error(msg, from_node)
 
         # call user defined listeners
         for device in self._monitor.nodes[from_node.node_id].devices.values():
@@ -93,14 +93,14 @@ class Monitor(object):
         reactor.listenMulticast(adapter.echonet_lite_port,
                                 adapter.Receiver(
                                     local_addr=node_id,
-                                    on_receive=self._on_receive),
+                                    on_did_receive=self.on_did_receive),
                                 listenMultiple=True)
         f = Factory()
         f.protocol = shellservice.ShellServer
         reactor.listenTCP(3611, f)
         reactor.run()
 
-    def _on_receive(self, data, from_node_id):
+    def on_did_receive(self, data, from_node_id):
         msg = protocol.decode(data)
         if msg is None:
             return
@@ -109,7 +109,7 @@ class Monitor(object):
             n = middleware.Node(from_node_id, {})
             self._nodes[from_node_id] = n
         # deliver the received message to listeners.
-        self._listener.on_receive(msg, self._nodes[from_node_id])
+        self._listener.on_did_receive(msg, self._nodes[from_node_id])
 
     def send(self, msg, to_node_id=None):
         if msg.tid is None:

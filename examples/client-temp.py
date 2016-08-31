@@ -35,7 +35,7 @@ class MyProfile(middleware.NodeProfile):
     def __init__(self, eoj=None):
         super(MyProfile, self).__init__(eoj=eoj)
 
-    def on_find_device(self, eoj, from_node_id):
+    def on_did_find_device(self, eoj, from_node_id):
         if (eoj.clsgrp == CLSGRP_CODE['SENSOR']
             and eoj.cls == CLS_SE_CODE['TEMPERATURE']):
             return Temperature(eoj, from_node_id)

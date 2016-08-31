@@ -13,7 +13,7 @@ class Receiver(DatagramProtocol):
     def __init__(self, **kwargs):
         super(Receiver, self).__init__()
         self._local_addr = kwargs['local_addr']
-        self._on_receive = kwargs['on_receive']
+        self._on_did_receive = kwargs['on_did_receive']
 
     def startProtocol(self):
         self.transport.setTTL(1)
@@ -22,7 +22,7 @@ class Receiver(DatagramProtocol):
 
     def datagramReceived(self, datagram, address):
         node_id = address[0]
-        self._on_receive(datagram, node_id)
+        self._on_did_receive(datagram, node_id)
 
 class Sender(object):
     def __init__(self, local_addr):
@@ -40,14 +40,13 @@ class Sender(object):
 
 if __name__ == '__main__':
     from twisted.internet import reactor
-    from twisted.internet.protocol import Factory
 
-    def on_receive(data):
+    def on_did_receive(data):
         print(data)
 
     reactor.listenMulticast(echonet_lite_port,
-                            IPv4GroupReceiver({'on_receive': on_receive}),
+                            Receiver(
+                                local_addr='',
+                                on_did_receive=on_did_receive),
                             listenMultiple=True)
     reactor.run()
-
-

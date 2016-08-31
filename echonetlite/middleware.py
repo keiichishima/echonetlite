@@ -162,10 +162,10 @@ class LocalDevice(Device):
                 if msg.esv == ESV_CODE['SETC']:
                     res_props.append(Property(epc=p.epc,
                                               edt=self._properties[p.epc]))
-            
+
         return res_props
 
-    def on_receive_request(self, msg, from_node):
+    def on_did_receive_request(self, msg, from_node):
         props = self._build_response_props(msg, from_node)
         esv = None
         if msg.esv == ESV_CODE['SETC']:
@@ -189,10 +189,10 @@ class LocalDevice(Device):
     def _process_response(self, msg, from_node):
         pass
 
-    def on_receive_response(self, msg, from_node):
+    def on_did_receive_response(self, msg, from_node):
         self._process_response(msg, from_node)
 
-    def on_receive_error(self, msg, from_node):
+    def on_did_receive_error(self, msg, from_node):
         pass
 
 
@@ -299,8 +299,8 @@ class NodeProfile(ProfileSuperObject):
                              CLS_PR_CODE['PROFILE'],
                              INSTANCE_PR_NORMAL))
 
-    def _on_receive_operating_status_response(self, from_node_id,
-                                              from_eoj, esv, prop):
+    def _on_did_receive_operating_status_response(self, from_node_id,
+                                                  from_eoj, esv, prop):
         if (prop.pdc == 1
             and prop.edt[0] == EDT_OPERATING_STATUS_BOOTING):
             self.send(esv=ESV_CODE['GET'],
@@ -308,8 +308,8 @@ class NodeProfile(ProfileSuperObject):
                          to_eoj=from_eoj,
                          to_node_id=from_node_id)
 
-    def _on_receive_instance_list_s_response(self, from_node_id,
-                                             from_eoj, esv, prop):
+    def _on_did_receive_instance_list_s_response(self, from_node_id,
+                                                 from_eoj, esv, prop):
         if prop.pdc == 0:
             return
         (ndevices,) = struct.unpack('!B', bytearray(prop.edt[0:1]))
@@ -320,15 +320,15 @@ class NodeProfile(ProfileSuperObject):
             if str(eoj) in interfaces.monitor.nodes[from_node_id].devices:
                 # already listed
                 continue
-            device = None
-            if (hasattr(self, 'on_find_device')
-                and callable(self.on_find_device)):
-                device = self.on_find_device(eoj, from_node_id)
+            device = self.on_did_find_device(eoj, from_node_id)
             if device is None:
-                device = self.on_find_device_default(eoj, from_node_id)
+                device = self._on_did_find_device_default(eoj, from_node_id)
             interfaces.monitor.nodes[from_node_id].add_device(device)
 
-    def on_find_device_default(self, eoj, from_node_id):
+    def on_did_find_device(self, eoj, from_node_id):
+        return None
+
+    def _on_did_find_device_default(self, eoj, from_node_id):
         return Device(eoj=eoj)
 
     def _process_response(self, msg, from_node):
@@ -339,10 +339,10 @@ class NodeProfile(ProfileSuperObject):
         esv = msg.esv
         for prop in msg.properties:
             if prop.epc == EPC_OPERATING_STATUS:
-                self._on_receive_operating_status_response(
+                self._on_did_receive_operating_status_response(
                     from_node_id, from_eoj, esv, prop)
             elif prop.epc == EPC_SELF_NODE_INSTANCE_LIST_S:
-                self._on_receive_instance_list_s_response(
+                self._on_did_receive_instance_list_s_response(
                     from_node_id, from_eoj, esv, prop)
 
 
