@@ -132,7 +132,8 @@ class Monitor(object):
         return l
 
     def unschedule_loopingcall(self, l):
-        l.stop()
-        self._loopingcalls.remove(l)
+        if l in self._loopingcalls:
+            l.stop()
+            self._loopingcalls.remove(l)
 
 monitor = Monitor()
