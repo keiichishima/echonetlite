@@ -242,11 +242,12 @@ class NodeProfile(ProfileSuperObject):
             EPC_SELF_NODE_INSTANCE_LIST_S,
             EPC_SELF_NODE_CLASS_LIST_S]
 
-        # This __init__() function is called before the lower layer
-        # sender object is created.  So we have to use the
-        # Monitor.schedule_call() function instead of using the
-        # Device.send() function.
+        # Discover nodes just after booting,
         interfaces.monitor.schedule_call(0, self._request_operating_status)
+        # and discover any new devices on the link every 60 seconds.
+        interfaces.monitor.schedule_loopingcall(
+            60,
+            self._request_operating_status)
 
     def update_device_numbers(self, devices):
         grpcls_set = set()
