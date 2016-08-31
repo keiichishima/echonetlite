@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from echonetlite import interfaces
+import echonetlite
 from echonetlite.protocol import *
 
 class Node(object):
@@ -141,7 +141,7 @@ class LocalDevice(Device):
         msg.esv = esv
         msg.properties = props
         msg.opc = len(props)
-        interfaces.monitor.send(msg, to_node_id)
+        echonetlite.interfaces.monitor.send(msg, to_node_id)
 
     def _build_response_props(self, msg, from_node):
         res_props = []
@@ -247,11 +247,11 @@ class NodeProfile(ProfileSuperObject):
             EPC_SELF_NODE_CLASS_LIST_S]
 
         # Discover nodes just after booting,
-        interfaces.monitor.schedule_call(0, self._request_operating_status)
+        echonetlite.interfaces.monitor.schedule_call(
+            0, self._request_operating_status)
         # and discover any new devices on the link every 60 seconds.
-        interfaces.monitor.schedule_loopingcall(
-            60,
-            self._request_operating_status)
+        echonetlite.interfaces.monitor.schedule_loopingcall(
+            60, self._request_operating_status)
 
     def update_device_numbers(self, devices):
         grpcls_set = set()
@@ -322,13 +322,13 @@ class NodeProfile(ProfileSuperObject):
             (g,c,i) = struct.unpack('!BBB', bytearray(prop.edt[
                 idx * 3 + 1:idx * 3 + 4]))
             eoj = EOJ(g, c, i)
-            if str(eoj) in interfaces.monitor.nodes[from_node_id].devices:
+            if str(eoj) in echonetlite.interfaces.monitor.nodes[from_node_id].devices:
                 # already listed
                 continue
             device = self.on_did_find_device(eoj, from_node_id)
             if device is None:
                 device = self._on_did_find_device_default(eoj, from_node_id)
-            interfaces.monitor.nodes[from_node_id].add_device(device)
+            echonetlite.interfaces.monitor.nodes[from_node_id].add_device(device)
 
     def on_did_find_device(self, eoj, from_node_id):
         return None

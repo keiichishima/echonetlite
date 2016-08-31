@@ -4,7 +4,7 @@
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol
 
-from echonetlite import interfaces
+import echonetlite
 from echonetlite import protocol
 
 class ShellServer(Protocol):
@@ -13,8 +13,8 @@ class ShellServer(Protocol):
         if command == 'search':
             reactor.callWhenRunning(self.do_search)
         elif command == 'list_nodes':
-            for node_id in interfaces.monitor.nodes:
-                self.transport.write(str(interfaces.monitor.nodes[node_id]).encode('utf-8'))
+            for node_id in echonetlite.interfaces.monitor.nodes:
+                self.transport.write(str(echonetlite.interfaces.monitor.nodes[node_id]).encode('utf-8'))
                 self.transport.write('\n'.encode('utf-8'))
         elif command == 'quit':
             self.transport.loseConnection()
@@ -22,7 +22,7 @@ class ShellServer(Protocol):
             print('unknown command {0}.'.format(command))
 
     def do_search(self):
-        profile = interfaces.monitor.get_self_node().get_profile()
+        profile = echonetlite.interfaces.monitor.get_self_node().get_profile()
         profile.send(esv=protocol.ESV_CODE['GET'],
                      props=[protocol.Property(epc=0xd6),],
                      to_eoj=protocol.EOJ(protocol.CLSGRP_CODE['PROFILE'],
