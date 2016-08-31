@@ -278,7 +278,7 @@ def decode(data):
             edt = struct.unpack('!' + 'B' * pdc, data[ptr+2:ptr+2+pdc])
         pl = Property(epc, edt)
         return (pl, 2 + pdc)
-        
+
     msg = Message()
     msg.tid = tid
     msg.seoj = seoj
