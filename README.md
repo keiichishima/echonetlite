@@ -9,7 +9,9 @@ client.
 the Echonet web site.
 
 
-## Creating a Echonet Lite Node
+## Programming an Echonet Lite Node
+
+### Server Node
 
 A simple temperature server code is included in the examples directory
 as ``examples/server-temp.py``.
@@ -24,6 +26,7 @@ from echonetlite.protocol import *
 class MyTemperature(middleware.NodeSuperObject):
     def __init__(self, eoj):
         super(MyTemperature, self).__init__(eoj=eoj)
+        # self.property[EPC_MANUFACTURE_CODE] = ...
         self._add_property(EPC_TEMPERATURE, [0,0])
         self.get_property_map += [
             EPC_TEMPERATURE]
@@ -35,10 +38,12 @@ class MyTemperature(middleware.NodeSuperObject):
     def _update_temperature(self):
         # update temperature value here
         val = 270
-        self.properties[EPC_TEMPERATURE] = struct.pack('!h', val)
+        self._properties[EPC_TEMPERATURE] = struct.pack('!h', val)
 
 # Create local devices
 profile = middleware.NodeProfile()
+# profile.property[EPC_MANUFACTURE_CODE] = ...
+# profile.property[EPC_IDENTIFICATION_NUMBER] = ...
 temperature = MyTemperature(eoj=EOJ(clsgrp=CLSGRP_CODE['SENSOR'],
                                     cls=CLS_SE_CODE['TEMPERATURE'],
                                     instance_id=1))
@@ -81,3 +86,76 @@ Finally, by calling the ``monitor.start()`` function providing the
 node IP address and device list, the Echonet Lite server that provides
 two devices one is a NodeProfile device and the other is a temperature
 sensor device starts working
+
+
+### Client Node
+
+A simple temperature client that can communication with the above
+simple temperature server is included in the examples directory as
+``examples/client-temp.py``.
+
+```python
+import struct
+
+from echonetlite.interfaces import monitor
+from echonetlite import middleware
+from echonetlite.protocol import *
+
+class Temperature(middleware.Device):
+    def __init__(self, eoj, node_id):
+        super(Temperature, self).__init__(eoj=eoj)
+        self._node_id = node_id
+        monitor.schedule_loopingcall(
+            10,
+            self.request_temperature,
+            from_device=controller,
+            to_eoj=self.eoj,
+            to_node_id=self._node_id)
+
+        self.add_listener(EPC_TEMPERATURE,
+                          self.on_temperature)
+
+    def request_temperature(self, from_device, to_eoj, to_node_id):
+        from_device.send(esv=ESV_CODE['GET'],
+                         props=[Property(epc=EPC_TEMPERATURE),],
+                         to_eoj=to_eoj,
+                         to_node_id=to_node_id)
+
+    def on_temperature(self, from_node_id, from_eoj,
+                       to_device, esv, prop):
+        if esv not in ESV_RESPONSE_CODES:
+            return
+        (val,) = struct.unpack('!h', bytearray(prop.edt))
+        print('Temperature is', val / 10)
+
+class MyProfile(middleware.NodeProfile):
+    def __init__(self, eoj=None):
+        super(MyProfile, self).__init__(eoj=eoj)
+
+    def on_did_find_device(self, eoj, from_node_id):
+        if (eoj.clsgrp == CLSGRP_CODE['SENSOR']
+            and eoj.cls == CLS_SE_CODE['TEMPERATURE']):
+            return Temperature(eoj, from_node_id)
+        return None
+
+profile = MyProfile()
+# profile.property[EPC_MANUFACTURE_CODE] = ...
+# profile.property[EPC_IDENTIFICATION_NUMBER] = ...
+controller = middleware.Controller(instance_id=1)
+
+monitor.start(node_id='172.16.254.1',
+              devices={str(profile.eoj): profile,
+                       str(controller.eoj): controller})
+
+```
+
+The ``Temperature`` class is a placeholder to register functions to
+request a temperature value and to receive its response.  In the
+``__init__()`` function, two functions ``request_temperature``
+and ``on_temperature`` are registered for these purposes.
+
+When writing a client node, you need to handle new device discovery
+case.  In the ``on_did_find_device()`` function, you will receive an
+EOJ and node IP address when the middleware find a new device.  You
+need to check the EOJ and create a new device entry (the
+``Temperature`` class in this case).
