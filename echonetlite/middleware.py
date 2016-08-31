@@ -82,6 +82,10 @@ class Device(object):
         del self._listeners[key]
 
 
+class RemoteDevice(Device):
+    pass
+
+
 class LocalDevice(Device):
     def __init__(self, eoj=None):
         super(LocalDevice, self).__init__(eoj)
