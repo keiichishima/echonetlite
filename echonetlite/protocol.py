@@ -265,17 +265,17 @@ def decode(data):
     (ehd1, ehd1, tid,
      seoj0, seoj1, seoj2,
      deoj0, deoj1, deoj2,
-     esv, opc) = struct.unpack('!BBHBBBBBBBB',
+     esv, opc) = struct.unpack('!2BH8B',
                                data[0:COMMON_HDR_LEN])
     seoj = EOJ(seoj0, seoj1, seoj2)
     deoj = EOJ(deoj0, deoj1, deoj2)
 
     # decode EPCs
     def decode_epc():
-        (epc, pdc) = struct.unpack('!BB', data[ptr:ptr+2])
+        (epc, pdc) = struct.unpack('!2B', data[ptr:ptr+2])
         edt = None
         if pdc != 0:
-            edt = struct.unpack('!' + 'B' * pdc, data[ptr+2:ptr+2+pdc])
+            edt = struct.unpack('!{0}B'.format(pdc), data[ptr+2:ptr+2+pdc])
         pl = Property(epc, edt)
         return (pl, 2 + pdc)
 
@@ -305,7 +305,7 @@ def encode(message):
     if message.opc == None:
         message.opc = len(message.properties)
 
-    data += struct.pack('!BBHBBBBBB',
+    data += struct.pack('!2BH6B',
                         EHD1,
                         EHD2_FMT1,
                         message.tid & 0xffff,
@@ -320,7 +320,7 @@ def encode(message):
     for p in message.properties:
         data += struct.pack('!BB', p.epc, p.pdc)
         if p.pdc > 0:
-            data += struct.pack('!' + 'B' * p.pdc, *p.edt)
+            data += struct.pack('!{0}B'.format(p.pdc), *p.edt)
 
     return data
 
