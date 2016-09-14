@@ -1,3 +1,4 @@
+import argparse
 import struct
 
 from echonetlite.interfaces import monitor
@@ -43,9 +44,15 @@ class MyProfile(middleware.NodeProfile):
             return Temperature(eoj, from_node_id)
         return None
 
-profile = MyProfile()
-controller = middleware.Controller(instance_id=1)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--self-node', dest='self_node', required=True,
+                        help='IP address of this node')
+    args = parser.parse_args()
 
-monitor.start(node_id='172.16.254.1',
-              devices={str(profile.eoj): profile,
-                       str(controller.eoj): controller})
+    profile = MyProfile()
+    controller = middleware.Controller(instance_id=1)
+
+    monitor.start(node_id=args.self_node,
+                  devices={str(profile.eoj): profile,
+                           str(controller.eoj): controller})

@@ -1,3 +1,4 @@
+import argparse
 import struct
 
 from echonetlite.interfaces import monitor
@@ -21,15 +22,21 @@ class MyTemperature(middleware.NodeSuperObject):
         val = 270
         self._properties[EPC_TEMPERATURE] = struct.pack('!h', val)
 
-# Create local devices
-profile = middleware.NodeProfile()
-# profile.property[EPC_MANUFACTURE_CODE] = ...
-# profile.property[EPC_IDENTIFICATION_NUMBER] = ...
-temperature = MyTemperature(eoj=EOJ(clsgrp=CLSGRP_CODE['SENSOR'],
-                                    cls=CLS_SE_CODE['TEMPERATURE'],
-                                    instance_id=1))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--self-node', dest='self_node', required=True,
+                        help='IP address of this node')
+    args = parser.parse_args()
 
-# Start the Echonet Lite message loop
-monitor.start(node_id='172.16.254.66',
-              devices={str(profile.eoj): profile,
-                       str(temperature.eoj): temperature})
+    # Create local devices
+    profile = middleware.NodeProfile()
+    # profile.property[EPC_MANUFACTURE_CODE] = ...
+    # profile.property[EPC_IDENTIFICATION_NUMBER] = ...
+    temperature = MyTemperature(eoj=EOJ(clsgrp=CLSGRP_CODE['SENSOR'],
+                                        cls=CLS_SE_CODE['TEMPERATURE'],
+                                        instance_id=1))
+
+    # Start the Echonet Lite message loop
+    monitor.start(node_id=args.self_node,
+                  devices={str(profile.eoj): profile,
+                           str(temperature.eoj): temperature})
