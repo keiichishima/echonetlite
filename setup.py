@@ -3,10 +3,10 @@
 from setuptools import setup
 
 try:
-    from pandoc import convert
+    from pypandoc import convert
     read_me = lambda f: convert(f, 'rst')
 except ImportError:
-    print('pandoc is not installed.')
+    print('pypandoc is not installed.')
     read_me = lambda f: open(f, 'r').read()
 
 setup(name='echonetlite',
@@ -15,7 +15,7 @@ setup(name='echonetlite',
       long_description=read_me('README.md'),
       author='Keiichi SHIMA',
       author_email='keiichi@iijlab.net',
-      # url='',
+      url='https://github.com/keiichishima/echonetlite',
       packages=['echonetlite'],
       install_requires=['Twisted>=16.3.0'],
       classifiers=[
