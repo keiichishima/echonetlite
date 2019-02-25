@@ -10,7 +10,7 @@ except ImportError:
     read_me = lambda f: open(f, 'r').read()
 
 setup(name='echonetlite',
-      version='0.0.1',
+      version='0.1.0',
       description='Echonet Lite',
       long_description=read_me('README.md'),
       author='Keiichi SHIMA',
