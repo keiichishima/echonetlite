@@ -3,8 +3,8 @@
 from setuptools import setup
 
 try:
-    from pypandoc import convert
-    read_me = lambda f: convert(f, 'rst')
+    from pypandoc import convert_file
+    read_me = lambda f: convert_file(f, 'rst')
 except ImportError:
     print('pypandoc is not installed.')
     read_me = lambda f: open(f, 'r').read()
