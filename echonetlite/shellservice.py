@@ -16,7 +16,7 @@ class ShellServer(Protocol):
             for node_id in echonetlite.interfaces.monitor.nodes:
                 self.transport.write(str(echonetlite.interfaces.monitor.nodes[node_id]).encode('utf-8'))
                 self.transport.write('\n'.encode('utf-8'))
-        if command == 'shutdown':
+        elif command == 'shutdown':
             reactor.stop()
         elif command == 'quit':
             self.transport.loseConnection()
